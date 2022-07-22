@@ -9,7 +9,17 @@ This repository contains the official PyTorch implementation of paper "Equivaria
 
 
 
+
+
+## EqInv Algorithm
+
+<div align="center">
+  <img src="fig/framework.png" width="900px" />
+</div>
+
+
 ## Prerequisites
+
 - Python 3.7
 - PyTorch 1.9.0
 - tqdm
@@ -20,33 +30,56 @@ This repository contains the official PyTorch implementation of paper "Equivaria
 
 
 ## Data Preparation
-1. Please download dataset in this [link](https://drive.google.com/drive/u/1/folders/14Ppy9Cfp4gz9AP1tYIGW_XaOjycOIjX_) and put it into the `data` folder.
+Please download dataset in this [link](hhttps://entuedu-my.sharepoint.com/:f:/g/personal/tan317_e_ntu_edu_sg/ElRJ-95QBEtOqtrtkFakdVQB6sej96uAiHIGpFOZr0VuMA?e=LoiUxo) and put it into the `data` folder.
 
-   
+**Ps:**
+
+- We also provide the dataset generation script [here](tool/produce_vipriors_fewshot.py) and you can generate the efficient learning dataset that you want.
+- Besides the `train` and `val` set, we also provide the `testgt` set for test accuracy evaluation. This can be achieved since VIPriors Challenge use the part of ImageNet Val set for testing.
+
+
+
 
 ## Training
+
+#### 0. Main parameters (may need to be specified by user)
+- `pretrain_path`: path of SSL pretrained models
+- `stage1_model`: the model type of the SSL training stage. 
+- `num_shot`: number of samples for each class in the dataset.
+- `class_num`: number of classes in the dataset.
+- `activate_type`: the activation type added on the mask.
+- `inv_start`: when to add the invariance regularization.
+- `inv_weight`: the weight of the invariance regularization.
+- `opt_mask`: if optimize the mask.
+
+
+
 
 #### 1. Run the baseline model#1 —— Training From Scratch
 
    ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python baseline.py -b 256 --name vipriors10_rn50 -j 16 --lr 0.1 data/imagenet_10
+CUDA_VISIBLE_DEVICES=0,1,2,3 python baseline.py -b 256 --name vipriors10_rn50 -j 8 --lr 0.1 data/imagenet_10
    ```
 
-   You can also try the built-in augmentation algorithms, such as `Mixup`
+You can also try the built-in augmentation algorithms, such as `Mixup`
 
    ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python baseline.py -b 256 --name vipriors10_rn50_mixup -j 16 --lr 0.1 data/imagenet_10 --mixup
+CUDA_VISIBLE_DEVICES=0,1,2,3 python baseline.py -b 256 --name vipriors10_rn50_mixup -j 8 --lr 0.1 data/imagenet_10 --mixup
    ```
 
    
 
+
+
 #### 2. Run the baseline model#2 —— Training From SSL
 
    ```
-CUDA_VISIBLE_DEVICES=4,5,6,7 python baseline_eq_ipirm.py -b 256 --name vipriors10_rn50_lr0.1_ipirm -j 16 --lr 0.1 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth
+CUDA_VISIBLE_DEVICES=4,5,6,7 python baseline_eq_ipirm.py -b 256 --name vipriors10_rn50_lr0.1_ipirm -j 8 --lr 0.1 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth
    ```
 
-For the SSL pretraining process, please follow the following chapter.
+For the SSL pretraining process, please follow the chapter below.
+
+
 
 
 
@@ -64,19 +97,30 @@ Please follow the original codebase. We list the code we used below:
 
 - MAE: https://github.com/facebookresearch/mae
 
+Please put the pretrained models in `phase1_ssl_methods`. You can also choose to directly use our SSL pretrained models (IP-IRM) [here](https://entuedu-my.sharepoint.com/:f:/g/personal/tan317_e_ntu_edu_sg/ErZGda3w1INBiQIuJ00RItMB-oaIkOLFB_a5uI_wxIShMQ?e=SSYNNb)
 
 
-**Step-2&3: Downstream Fine-tuning (Invariance Learning)**
 
-   ```
-CUDA_VISIBLE_DEVICES=4,5,6,7 python vipriors_eqinv_ready.py -b 128  --name vipriors10_ipirm_mask_sigmoid_rex100._start10 -j 64 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth --inv rex --inv_weight 100. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 10
-   ```
+**Step-2/3: Downstream Fine-tuning (Invariance Learning)**
 
-   You can also adopt `Random Augmentation` to achieve better results
+Running Commands
 
    ```
-CUDA_VISIBLE_DEVICES=4,5,6,7 python vipriors_eqinv_ready.py -b 128  --name vipriors10_ipirm_mask_sigmoid_rex10._start10_randaug -j 64 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth --inv rex --inv_weight 10. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 10 --random_aug
+CUDA_VISIBLE_DEVICES=4,5,6,7 python vipriors_eqinv.py -b 128  --name vipriors10_ipirm_mask_sigmoid_rex100._start10 -j 24 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth --inv rex --inv_weight 100. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 10
    ```
 
-   
+You can also adopt `Random Augmentation` to achieve better results:
 
+   ```
+CUDA_VISIBLE_DEVICES=4,5,6,7 python vipriors_eqinv.py -b 128  --name vipriors10_ipirm_mask_sigmoid_rex10._start10_randaug -j 24 data/imagenet_10 --pretrain_path phase1_ssl_methods/run_imagenet10/ipirm_imagenet10/model_ipirm.pth --inv rex --inv_weight 10. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 10 --random_aug
+   ```
+
+For other dataset, you can try:
+
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 python vipriors_eqinv.py -b 128  --name vipriors20_ipirm_mask_sigmoid_rex10._start10_randaug -j 24 data/imagenet_20 --pretrain_path phase1_ssl_methods/run_imagenet20/ipirm_imagenet20/model_ipirm.pth --inv rex --inv_weight 10. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 20 --random_aug
+```
+
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 python vipriors_eqinv.py -b 128  --name vipriors50_ipirm_mask_sigmoid_rex10._start10_randaug -j 24 data/imagenet_50 --pretrain_path phase1_ssl_methods/run_imagenet50/ipirm_imagenet50/model_ipirm.pth --inv rex --inv_weight 10. --opt_mask --activat_type sigmoid --inv_start 10 --mlp --stage1_model ipirm --num_shot 50 --random_aug
+```
