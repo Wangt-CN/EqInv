@@ -5,7 +5,7 @@ This repository contains the official PyTorch implementation of paper "Equivaria
 **Equivariance and Invariance Inductive Bias for Learning from Insufficient Data** <br />
 [Tan Wang](https://wangt-cn.github.io/), [Qianru Sun](https://qianrusun.com/), Sugiri Pranata, Karlekar Jayashree, [Hanwang Zhang](https://www.ntu.edu.sg/home/hanwangzhang/) <br />
 **European Conference on Computer Vision (ECCV), 2022** <br />
-**[[Paper: Comming Soon]()] [[Poster: Comming Soon]()] [[Slides: Comming Soon]()]**<br />
+**[[Paper](https://arxiv.org/abs/2207.12258)] [[Poster](https://drive.google.com/file/d/1L72Wzfap4IPq3UzaGV2qjHbimKMSZymu/view?usp=sharing)] [[Slides](https://drive.google.com/file/d/1ZU4M_ljNEAnRRA-LVNxx5vCXpXF5Iywl/view?usp=sharing)]**<br />
 
 
 <br />
